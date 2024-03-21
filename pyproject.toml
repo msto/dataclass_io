@@ -1,0 +1,76 @@
+[tool.poetry]
+name         = "dceu"
+version      = "0.1.0"
+description  = "The Dataclass Extended Universe"
+readme       = "README.md"
+authors      = [
+    "Matt Stone <matt@fulcrumgenomics.com>",
+]
+homepage      = "https://github.com/msto/dceu"
+repository    = "https://github.com/msto/dceu"
+documentation = "https://github.com/msto/dceu"
+classifiers   = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
+
+[tool.poetry.dependencies]
+python    = "^3.11"
+
+[tool.poetry.group.dev.dependencies]
+poetry      = "^1.8.2"
+mypy        = "^1.5.1"
+pytest      = "^7.4.4"
+pytest-cov  = "^4.1.0"
+pytest-mypy = "^0.10.3"
+pytest-ruff = "^0.3.1"
+pytest-mock = "^3.12.0"
+ruff        = "0.3.3"
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/msto/dceu/issues"
+
+[build-system]
+requires      = ["poetry-core>=1.6"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.mypy]
+python_version              = "3.11"
+strict_optional             = false
+check_untyped_defs          = true
+disallow_incomplete_defs    = true
+disallow_untyped_calls      = true
+disallow_untyped_decorators = true
+disallow_untyped_defs       = true
+no_implicit_optional        = true
+warn_no_return              = true
+warn_redundant_casts        = true
+warn_return_any             = true
+warn_unreachable            = true
+warn_unused_configs         = true
+warn_unused_ignores         = true
+
+[tool.pytest.ini_options]
+minversion = "7.4"
+addopts    = [
+    "--color=yes",
+    "--import-mode=importlib",
+    "--cov",
+    "--mypy",
+    "--ruff"
+]
+
+[tool.ruff]
+line-length    = 100
+target-version = "py311"
+output-format  = "full"
+
+[tool.ruff.lint]
+select    = ["C901", "B", "E", "F", "I", "W", "Q"]
+ignore    = ["E203", "E701"]
+unfixable = ["B"]
+
+[tool.ruff.lint.isort]
+force-single-line = true
+
