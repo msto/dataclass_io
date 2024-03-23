@@ -1,8 +1,12 @@
 from csv import DictReader
+from dataclasses import fields
 from pathlib import Path
 from types import TracebackType
 from typing import Any
 from typing import Type
+
+from dataclass_io.lib import assert_readable_dataclass
+from dataclass_io.lib import assert_readable_file
 
 
 class DataclassReader:
@@ -18,7 +22,12 @@ class DataclassReader:
             dc_type: Dataclass type.
         """
 
+        assert_readable_file(path)
+        assert_readable_dataclass(dc_type)
+
         self._dc_type = dc_type
+        self._dc_fields = fields(self._dc_type)
+
         self._fin = path.open("r")
         self._reader = DictReader(self._fin, **kwds)
 
@@ -37,4 +46,6 @@ class DataclassReader:
         return self
 
     def __next__(self) -> dict[str, str]:
-        return next(self._reader)
+        row = next(self._reader)
+        return row
+
