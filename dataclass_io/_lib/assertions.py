@@ -6,7 +6,7 @@ from pathlib import Path
 from dataclass_io._lib.dataclass_extensions import DataclassInstance
 
 
-def assert_readable_file(path: Path) -> None:
+def assert_file_is_readable(path: Path) -> None:
     """
     Check that the input file exists and is readable.
 
@@ -26,7 +26,7 @@ def assert_readable_file(path: Path) -> None:
         raise PermissionError(f"The input file is not readable: {path}")
 
 
-def assert_readable_dataclass(dc_type: type[DataclassInstance]) -> None:
+def assert_dataclass_is_valid(dataclass_type: type[DataclassInstance]) -> None:
     """
     Check that the input type is a parseable dataclass.
 
@@ -34,5 +34,5 @@ def assert_readable_dataclass(dc_type: type[DataclassInstance]) -> None:
         TypeError: If the provided type is not a dataclass.
     """
 
-    if not is_dataclass(dc_type):
-        raise TypeError(f"The provided type must be a dataclass: {dc_type.__name__}")
+    if not is_dataclass(dataclass_type):
+        raise TypeError(f"The provided type must be a dataclass: {dataclass_type.__name__}")

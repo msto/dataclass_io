@@ -11,10 +11,8 @@ from typing import TextIO
 from typing import Type
 from typing import TypeAlias
 
-from dataclass_io._lib.assertions import assert_readable_dataclass
-from dataclass_io._lib.assertions import assert_readable_file
-
-# from dataclass_io._lib.dataclass_extensions import DataclassType
+from dataclass_io._lib.assertions import assert_dataclass_is_valid
+from dataclass_io._lib.assertions import assert_file_is_readable
 from dataclass_io._lib.dataclass_extensions import DataclassInstance
 
 ReadableFileHandle: TypeAlias = TextIOWrapper | IO | TextIO
@@ -58,8 +56,8 @@ class DataclassReader:
             TypeError: If the provided type is not a dataclass.
         """
 
-        assert_readable_file(path)
-        assert_readable_dataclass(dataclass_type)
+        assert_file_is_readable(path)
+        assert_dataclass_is_valid(dataclass_type)
 
         self.dataclass_type = dataclass_type
         self.delimiter = delimiter

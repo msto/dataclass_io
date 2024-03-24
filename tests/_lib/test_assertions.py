@@ -3,11 +3,11 @@ from pathlib import Path
 
 import pytest
 
-from dataclass_io._lib.assertions import assert_readable_dataclass
-from dataclass_io._lib.assertions import assert_readable_file
+from dataclass_io._lib.assertions import assert_dataclass_is_valid
+from dataclass_io._lib.assertions import assert_file_is_readable
 
 
-def test_assert_readable_dataclass() -> None:
+def test_assert_dataclass_is_valid() -> None:
     """
     Test that we can validate if a dataclass is valid for reading.
     """
@@ -18,12 +18,12 @@ def test_assert_readable_dataclass() -> None:
         bar: int
 
     try:
-        assert_readable_dataclass(FakeDataclass)
+        assert_dataclass_is_valid(FakeDataclass)
     except TypeError:
         raise AssertionError("Failed to validate a valid dataclass") from None
 
 
-def test_assert_readable_dataclass_raises_if_not_a_dataclass() -> None:
+def test_assert_dataclass_is_valid_raises_if_not_a_dataclass() -> None:
     """
     Test that we raise an error if the provided type is not a dataclass.
     """
@@ -35,10 +35,10 @@ def test_assert_readable_dataclass_raises_if_not_a_dataclass() -> None:
     with pytest.raises(TypeError, match="The provided type must be a dataclass: BadDataclass"):
         # mypy (correctly) flags that `BadDataclass` is not a dataclass.
         # We still want to test that we can enforce this at runtime, so here it's ok to ignore.
-        assert_readable_dataclass(BadDataclass)  # type: ignore[arg-type]
+        assert_dataclass_is_valid(BadDataclass)  # type: ignore[arg-type]
 
 
-def test_assert_readable_file(tmp_path: Path) -> None:
+def test_assert_file_is_readable(tmp_path: Path) -> None:
     """
     Test that we can validate if a file is valid for reading.
     """
@@ -47,30 +47,30 @@ def test_assert_readable_file(tmp_path: Path) -> None:
     fpath.touch()
 
     try:
-        assert_readable_file(fpath)
+        assert_file_is_readable(fpath)
     except Exception:
         raise AssertionError("Failed to validate a valid file") from None
 
 
-def test_assert_readable_file_raises_if_file_does_not_exist(tmp_path: Path) -> None:
+def test_assert_file_is_readable_raises_if_file_does_not_exist(tmp_path: Path) -> None:
     """
     Test that we can validate if a file does not exist.
     """
 
     with pytest.raises(FileNotFoundError, match="The input file does not exist: "):
-        assert_readable_file(tmp_path / "does_not_exist.txt")
+        assert_file_is_readable(tmp_path / "does_not_exist.txt")
 
 
-def test_assert_readable_file_raises_if_file_is_a_directory(tmp_path: Path) -> None:
+def test_assert_file_is_readable_raises_if_file_is_a_directory(tmp_path: Path) -> None:
     """
     Test that we can validate if a file does not exist.
     """
 
     with pytest.raises(IsADirectoryError, match="The input file path is a directory: "):
-        assert_readable_file(tmp_path)
+        assert_file_is_readable(tmp_path)
 
 
-def test_assert_readable_file_raises_if_file_is_unreadable(tmp_path: Path) -> None:
+def test_assert_file_is_readable_raises_if_file_is_unreadable(tmp_path: Path) -> None:
     """
     Test that we can validate if a file cannot be read.
     """
@@ -79,4 +79,4 @@ def test_assert_readable_file_raises_if_file_is_unreadable(tmp_path: Path) -> No
     fpath.touch(0)
 
     with pytest.raises(PermissionError, match="The input file is not readable: "):
-        assert_readable_file(fpath)
+        assert_file_is_readable(fpath)
