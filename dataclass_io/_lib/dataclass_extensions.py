@@ -16,6 +16,3 @@ class DataclassInstance(Protocol):
     """
 
     __dataclass_fields__: ClassVar[dict[str, Any]]
-
-
-# DataclassType = TypeVar("DataclassType", bound=DataclassInstance)

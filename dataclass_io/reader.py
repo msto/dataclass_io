@@ -1,7 +1,6 @@
 from csv import DictReader
 from dataclasses import dataclass
 from dataclasses import fields
-from dataclasses import is_dataclass
 from io import TextIOWrapper
 from pathlib import Path
 from types import TracebackType
@@ -14,6 +13,8 @@ from typing import TypeAlias
 
 from dataclass_io._lib.assertions import assert_readable_dataclass
 from dataclass_io._lib.assertions import assert_readable_file
+
+# from dataclass_io._lib.dataclass_extensions import DataclassType
 from dataclass_io._lib.dataclass_extensions import DataclassInstance
 
 ReadableFileHandle: TypeAlias = TextIOWrapper | IO | TextIO
@@ -40,7 +41,7 @@ class DataclassReader:
     def __init__(
         self,
         path: Path,
-        dataclass_type: type,
+        dataclass_type: type[DataclassInstance],
         delimiter: str = "\t",
         header_comment_char: str = "#",
         **kwds: Any,
@@ -59,15 +60,6 @@ class DataclassReader:
 
         assert_readable_file(path)
         assert_readable_dataclass(dataclass_type)
-
-        # NB: Somewhat annoyingly, when this validation is extracted into an external helper,
-        # mypy can no longer recognize that `self._dataclass_type` is a dataclass, and complains
-        # about the return type on `_row_to_dataclass`.
-        #
-        # I'm leaving `assert_readable_dataclass` in case we want to extend the definition of what
-        # it means to be a valid dataclass, but this is needed here to satisfy type checking.
-        if not is_dataclass(dataclass_type):
-            raise TypeError(f"The provided type must be a dataclass: {dataclass_type.__name__}")
 
         self.dataclass_type = dataclass_type
         self.delimiter = delimiter

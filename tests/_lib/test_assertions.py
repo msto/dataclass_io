@@ -33,7 +33,9 @@ def test_assert_readable_dataclass_raises_if_not_a_dataclass() -> None:
         bar: int
 
     with pytest.raises(TypeError, match="The provided type must be a dataclass: BadDataclass"):
-        assert_readable_dataclass(BadDataclass)
+        # mypy (correctly) flags that `BadDataclass` is not a dataclass.
+        # We still want to test that we can enforce this at runtime, so here it's ok to ignore.
+        assert_readable_dataclass(BadDataclass)  # type: ignore[arg-type]
 
 
 def test_assert_readable_file(tmp_path: Path) -> None:

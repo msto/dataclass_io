@@ -3,6 +3,8 @@ from os import R_OK
 from os import access
 from pathlib import Path
 
+from dataclass_io._lib.dataclass_extensions import DataclassInstance
+
 
 def assert_readable_file(path: Path) -> None:
     """
@@ -24,7 +26,7 @@ def assert_readable_file(path: Path) -> None:
         raise PermissionError(f"The input file is not readable: {path}")
 
 
-def assert_readable_dataclass(dc_type: type) -> None:
+def assert_readable_dataclass(dc_type: type[DataclassInstance]) -> None:
     """
     Check that the input type is a parseable dataclass.
 
