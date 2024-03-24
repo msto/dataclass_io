@@ -1,37 +1,21 @@
 from csv import DictReader
 from dataclasses import dataclass
 from dataclasses import fields
-from dataclasses import is_dataclass
 from io import TextIOWrapper
 from pathlib import Path
 from types import TracebackType
 from typing import IO
 from typing import Any
-from typing import ClassVar
 from typing import Optional
-from typing import Protocol
 from typing import TextIO
 from typing import Type
 from typing import TypeAlias
 
-from dataclass_io.lib import assert_readable_dataclass
-from dataclass_io.lib import assert_readable_file
+from dataclass_io._lib.assertions import assert_dataclass_is_valid
+from dataclass_io._lib.assertions import assert_file_is_readable
+from dataclass_io._lib.dataclass_extensions import DataclassInstance
 
 ReadableFileHandle: TypeAlias = TextIOWrapper | IO | TextIO
-
-
-class DataclassInstance(Protocol):
-    """
-    Type hint for a non-specific instance of a dataclass.
-
-    `DataclassReader` is an iterator over instances of the specified dataclass type. However, the
-    actual type is not known prior to instantiation. This `Protocol` is used to type hint the return
-    signature of `DataclassReader`'s `__next__` method.
-
-    https://stackoverflow.com/a/55240861
-    """
-
-    __dataclass_fields__: ClassVar[dict[str, Any]]
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -55,7 +39,7 @@ class DataclassReader:
     def __init__(
         self,
         path: Path,
-        dataclass_type: type,
+        dataclass_type: type[DataclassInstance],
         delimiter: str = "\t",
         header_comment_char: str = "#",
         **kwds: Any,
@@ -72,17 +56,8 @@ class DataclassReader:
             TypeError: If the provided type is not a dataclass.
         """
 
-        assert_readable_file(path)
-        assert_readable_dataclass(dataclass_type)
-
-        # NB: Somewhat annoyingly, when this validation is extracted into an external helper,
-        # mypy can no longer recognize that `self._dataclass_type` is a dataclass, and complains
-        # about the return type on `_row_to_dataclass`.
-        #
-        # I'm leaving `assert_readable_dataclass` in case we want to extend the definition of what
-        # it means to be a valid dataclass, but this is needed here to satisfy type checking.
-        if not is_dataclass(dataclass_type):
-            raise TypeError(f"The provided type must be a dataclass: {dataclass_type.__name__}")
+        assert_file_is_readable(path)
+        assert_dataclass_is_valid(dataclass_type)
 
         self.dataclass_type = dataclass_type
         self.delimiter = delimiter
