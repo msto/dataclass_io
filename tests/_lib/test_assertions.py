@@ -3,8 +3,8 @@ from pathlib import Path
 
 import pytest
 
-from dataclass_io.lib import assert_readable_dataclass
-from dataclass_io.lib import assert_readable_file
+from dataclass_io._lib.assertions import assert_readable_dataclass
+from dataclass_io._lib.assertions import assert_readable_file
 
 
 def test_assert_readable_dataclass() -> None:
