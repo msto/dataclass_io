@@ -1,5 +1,6 @@
 from dataclasses import is_dataclass
 from os import R_OK
+from os import W_OK
 from os import access
 from pathlib import Path
 
@@ -24,6 +25,44 @@ def assert_file_is_readable(path: Path) -> None:
 
     if not access(path, R_OK):
         raise PermissionError(f"The input file is not readable: {path}")
+
+
+def assert_file_is_writable(path: Path, overwrite: bool = True) -> None:
+    """
+    Check that the output file path is writable.
+
+    Optionally, ensure the output file does not exist.
+
+    Raises:
+        FileExistsError: If the provided file path exists when `overwrite` is set to `False`.
+        FileNotFoundError: If the provided file path's parent directory does not exist.
+        IsADirectoryError: If the provided file path is a directory.
+        PermissionError: If the provided file path is not writable.
+    """
+
+    if path.exists():
+        if not overwrite:
+            raise FileExistsError(
+                f"The output file already exists: {path}\n"
+                "Specify `overwrite=True` to overwrite the existing file."
+            )
+
+        if not path.is_file():
+            raise IsADirectoryError(f"The output file path is a directory: {path}")
+
+        if not access(path, W_OK):
+            raise PermissionError(f"The output file is not writable: {path}")
+
+    else:
+        if not path.parent.exists():
+            raise FileNotFoundError(
+                f"The specified directory for the output file path does not exist: {path.parent}"
+            )
+
+        if not access(path.parent, W_OK):
+            raise PermissionError(
+                f"The specified directory for the output file path is not writable: {path.parent}"
+            )
 
 
 def assert_dataclass_is_valid(dataclass_type: type[DataclassInstance]) -> None:
