@@ -1,9 +1,9 @@
-name: Python tests and code checks
+name: dataclass_io
 
 on: [push]
 
 env:
-  POETRY_VERSION: 1.6
+  POETRY_VERSION: 1.8.2
 
 jobs:
   testing:
@@ -49,7 +49,7 @@ jobs:
         run: python -m poetry check --lock
 
       - name: Install the library
-        run: poetry install -v
+        run: poetry install -v --with dev
 
       - name: Test the library
         run: poetry run pytest
