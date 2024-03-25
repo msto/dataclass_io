@@ -8,6 +8,7 @@ from typing import Type
 from dataclass_io._lib.assertions import assert_dataclass_is_valid
 from dataclass_io._lib.assertions import assert_file_is_readable
 from dataclass_io._lib.dataclass_extensions import DataclassInstance
+from dataclass_io._lib.dataclass_extensions import fieldnames
 from dataclass_io._lib.file import FileHeader
 from dataclass_io._lib.file import get_header
 
@@ -51,7 +52,7 @@ class DataclassReader:
         if self._header is None:
             raise ValueError(f"Could not find a header in the provided file: {path}")
 
-        if self._header.fieldnames != [f.name for f in fields(dataclass_type)]:
+        if self._header.fieldnames != fieldnames(dataclass_type):
             raise ValueError(
                 "The provided file does not have the same field names as the provided dataclass:\n"
                 f"\tDataclass: {dataclass_type.__name__}\n"
