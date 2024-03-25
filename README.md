@@ -7,4 +7,38 @@
 
 Dataclass IO.
 
+## Usage
 
+```py
+from dataclasses import dataclass
+from dataclass_io import DataclassReader
+
+
+@dataclass
+class MyData:
+    foo: int
+    bar: str
+
+
+with DataclassReader(path, MyData) as reader:
+    for record in reader:
+        do_something(record.foo)
+```
+
+
+```py
+from dataclasses import dataclass
+from dataclass_io import DataclassWriter
+
+
+@dataclass
+class MyData:
+    foo: int
+    bar: str
+
+
+with DataclassWriter(path, MyData) as writer:
+    for i in range(3):
+        record = MyData(foo=i, bar="something")
+        writer.write(record)
+```
