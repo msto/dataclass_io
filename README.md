@@ -7,7 +7,9 @@
 
 Dataclass IO.
 
-## Usage
+## Quickstart
+
+### Reading
 
 ```py
 from dataclasses import dataclass
@@ -25,7 +27,7 @@ with DataclassReader(path, MyData) as reader:
         do_something(record.foo)
 ```
 
-
+### Writing
 ```py
 from dataclasses import dataclass
 from dataclass_io import DataclassWriter
