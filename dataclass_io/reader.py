@@ -47,8 +47,8 @@ class DataclassReader:
             comment=comment,
         )
 
-        assert_file_is_readable(path)
         assert_dataclass_is_valid(dataclass_type)
+        assert_file_is_readable(path)
         assert_file_header_matches_dataclass(path, dataclass_type, file_format)
 
         self._dataclass_type = dataclass_type
