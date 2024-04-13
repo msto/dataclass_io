@@ -8,17 +8,16 @@ from types import TracebackType
 from typing import IO
 from typing import Any
 from typing import Iterable
-from typing import Optional
 from typing import TextIO
 from typing import Type
 from typing import TypeAlias
 
 from dataclass_io._lib.assertions import assert_dataclass_is_valid
+from dataclass_io._lib.assertions import assert_fieldnames_are_dataclass_attributes
 from dataclass_io._lib.assertions import assert_file_is_appendable
 from dataclass_io._lib.assertions import assert_file_is_writable
 from dataclass_io._lib.dataclass_extensions import DataclassInstance
 from dataclass_io._lib.dataclass_extensions import fieldnames
-from dataclass_io._lib.file import FileHeader
 
 WritableFileHandle: TypeAlias = TextIOWrapper | IO | TextIO
 
@@ -37,7 +36,8 @@ class DataclassWriter:
         mode: str = "w",
         delimiter: str = "\t",
         overwrite: bool = True,
-        header: Optional[FileHeader] = None,
+        include_fields: list[str] | None = None,
+        exclude_fields: list[str] | None = None,
         **kwds: Any,
     ) -> None:
         """
@@ -57,26 +57,39 @@ class DataclassWriter:
         except ValueError:
             raise ValueError(f"`mode` must be either 'a' (append) or 'w' (write): {mode}") from None
 
+        assert_dataclass_is_valid(dataclass_type)
+
+        if include_fields is not None and exclude_fields is not None:
+            raise ValueError(
+                "Only one of `include_fields` and `exclude_fields` may be specified, not both."
+            )
+        elif exclude_fields is not None:
+            assert_fieldnames_are_dataclass_attributes(exclude_fields, dataclass_type)
+            self._fieldnames = [f for f in fieldnames(dataclass_type) if f not in exclude_fields]
+        elif include_fields is not None:
+            assert_fieldnames_are_dataclass_attributes(include_fields, dataclass_type)
+            self._fieldnames = include_fields
+        else:
+            self._fieldnames = fieldnames(dataclass_type)
+
         if write_mode is WriteMode.WRITE:
             assert_file_is_writable(path, overwrite=overwrite)
         else:
             assert_file_is_appendable(path, dataclass_type=dataclass_type)
-
-        assert_dataclass_is_valid(dataclass_type)
+            raise NotImplementedError
 
         self.dataclass_type = dataclass_type
         self.delimiter = delimiter
-
         self._fout = path.open(mode)
 
         # TODO: optionally add preface
         # If we aren't appending, write the header before any rows
         if write_mode is WriteMode.WRITE:
-            self._fout.write(self.delimiter.join(fieldnames(dataclass_type)) + "\n")
+            self._fout.write(self.delimiter.join(self._fieldnames) + "\n")
 
         self._writer = DictWriter(
-            self._fout,
-            fieldnames=fieldnames(dataclass_type),
+            f=self._fout,
+            fieldnames=self._fieldnames,
             delimiter=self.delimiter,
         )
 
@@ -89,13 +102,17 @@ class DataclassWriter:
         exc_value: BaseException,
         traceback: TracebackType,
     ) -> None:
-        self._fout.close()
+        self.close()
 
     def close(self) -> None:
         self._fout.close()
 
     def write(self, dataclass_instance: DataclassInstance) -> None:
-        self._writer.writerow(asdict(dataclass_instance))
+        # Filter and/or re-order output fields if necessary
+        row = asdict(dataclass_instance)
+        row = {fieldname: row[fieldname] for fieldname in self._fieldnames}
+
+        self._writer.writerow(row)
 
     def writeall(self, dataclass_instances: Iterable[DataclassInstance]) -> None:
         for dataclass_instance in dataclass_instances:

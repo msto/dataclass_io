@@ -112,3 +112,24 @@ def assert_dataclass_is_valid(dataclass_type: type[DataclassInstance]) -> None:
 
     if not is_dataclass(dataclass_type):
         raise TypeError(f"The provided type must be a dataclass: {dataclass_type.__name__}")
+
+
+def assert_fieldnames_are_dataclass_attributes(
+    specified_fieldnames: list[str],
+    dataclass_type: type[DataclassInstance],
+) -> None:
+    """
+    Check that all of the specified fields are attributes on the given dataclass.
+
+    Raises:
+        ValueError: if any of the specified fieldnames are not an attribute on the given dataclass.
+    """
+
+    invalid_fieldnames = [f for f in specified_fieldnames if f not in fieldnames(dataclass_type)]
+
+    if len(invalid_fieldnames) > 0:
+        raise ValueError(
+            "One or more of the specified fields are not attributes on the dataclass "
+            + f"{dataclass_type.__name__}: "
+            + ", ".join(invalid_fieldnames)
+        )
