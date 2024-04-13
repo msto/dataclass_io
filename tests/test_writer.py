@@ -45,6 +45,53 @@ def test_writer_writeall(tmp_path: Path) -> None:
             next(f)
 
 
+def test_writer_append(tmp_path: Path) -> None:
+    """Test that we can append to a file."""
+    fpath = tmp_path / "test.txt"
+
+    with fpath.open("w") as fout:
+        fout.write("foo\tbar\n")
+
+    with DataclassWriter(path=fpath, mode="append", dataclass_type=FakeDataclass) as writer:
+        writer.write(FakeDataclass(foo="abc", bar=1))
+        writer.write(FakeDataclass(foo="def", bar=2))
+
+    with open(fpath, "r") as f:
+        assert next(f) == "foo\tbar\n"
+        assert next(f) == "abc\t1\n"
+        assert next(f) == "def\t2\n"
+        with pytest.raises(StopIteration):
+            next(f)
+
+
+def test_writer_append_raises_if_no_header(tmp_path: Path) -> None:
+    """Test that we raise an error if we try to append to a file with no header."""
+    fpath = tmp_path / "test.txt"
+    fpath.touch()
+
+    with pytest.raises(ValueError, match="Could not find a header"):
+        with DataclassWriter(path=fpath, mode="append", dataclass_type=FakeDataclass) as writer:
+            writer.write(FakeDataclass(foo="abc", bar=1))
+
+
+def test_writer_append_raises_if_header_does_not_match(tmp_path: Path) -> None:
+    """
+    Test that we raise an error if we try to append to a file whose header doesn't match our
+    dataclass.
+    """
+    fpath = tmp_path / "test.txt"
+
+    with fpath.open("w") as fout:
+        fout.write("foo\tbar\tbaz\n")
+
+    with pytest.raises(
+        ValueError,
+        match="The provided file does not have the same fieldnames",
+    ):
+        with DataclassWriter(path=fpath, mode="append", dataclass_type=FakeDataclass) as writer:
+            writer.write(FakeDataclass(foo="abc", bar=1))
+
+
 def test_writer_include_fields(tmp_path: Path) -> None:
     """Test that we can include only a subset of fields."""
     fpath = tmp_path / "test.txt"
