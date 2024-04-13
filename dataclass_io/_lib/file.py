@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+from enum import Enum
+from enum import unique
 from io import TextIOWrapper
 from typing import IO
 from typing import Optional
@@ -6,6 +8,40 @@ from typing import TextIO
 from typing import TypeAlias
 
 ReadableFileHandle: TypeAlias = TextIOWrapper | IO | TextIO
+WritableFileHandle: TypeAlias = TextIOWrapper | IO | TextIO
+
+
+@unique
+class WriteMode(Enum):
+    """
+    The mode in which to open the file.
+
+    Attributes:
+        value: The mode.
+        abbreviation: The short version of the mode (used with Python's `open()`).
+    """
+
+    value: str
+    abbreviation: str
+
+    def __new__(cls, value: str, abbreviation: str) -> "WriteMode":
+        enum = object.__new__(cls)
+        enum._value_ = value
+
+        return enum
+
+    # NB: Specifying the additional fields in the `__init__` method instead of `__new__` is
+    # necessary in order to construct `WriteMode` from only the value (e.g. `WriteMode("append")`).
+    # Otherwise, `mypy` complains about a missing positional argument.
+    # https://stackoverflow.com/a/54732120
+    def __init__(self, _: str, abbreviation: str = None):
+        self.abbreviation = abbreviation
+
+    WRITE = "write", "w"
+    """Write to a new file."""
+
+    APPEND = "append", "a"
+    """Append to an existing file."""
 
 
 @dataclass(frozen=True, kw_only=True)
