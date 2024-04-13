@@ -14,7 +14,7 @@ WritableFileHandle: TypeAlias = TextIOWrapper | IO | TextIO
 @unique
 class WriteMode(Enum):
     """
-    The mode in which to open the file.
+    The mode in which to open a file for writing.
 
     Attributes:
         value: The mode.
