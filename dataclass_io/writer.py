@@ -12,10 +12,16 @@ from dataclass_io._lib.assertions import assert_file_is_appendable
 from dataclass_io._lib.assertions import assert_file_is_writable
 from dataclass_io._lib.dataclass_extensions import DataclassInstance
 from dataclass_io._lib.dataclass_extensions import fieldnames
+from dataclass_io._lib.file import WritableFileHandle
 from dataclass_io._lib.file import WriteMode
 
 
 class DataclassWriter:
+    _dataclass_type: type[DataclassInstance]
+    _fieldnames: list[str]
+    _fout: WritableFileHandle
+    _writer: DictWriter
+
     def __init__(
         self,
         path: Path,
@@ -48,9 +54,9 @@ class DataclassWriter:
                 May not be used together with `include_fields`.
 
         Raises:
-            FileNotFoundError: If the input file does not exist.
-            IsADirectoryError: If the input file path is a directory.
-            PermissionError: If the input file is not readable.
+            FileNotFoundError: If the output file does not exist when trying to append.
+            IsADirectoryError: If the output file path is a directory.
+            PermissionError: If the output file is not writable (or readable when trying to append).
             TypeError: If the provided type is not a dataclass.
         """
 
@@ -61,6 +67,7 @@ class DataclassWriter:
 
         assert_dataclass_is_valid(dataclass_type)
 
+        self._fieldnames: list[str]
         if include_fields is not None and exclude_fields is not None:
             raise ValueError(
                 "Only one of `include_fields` and `exclude_fields` may be specified, not both."
@@ -82,7 +89,6 @@ class DataclassWriter:
 
         self._dataclass_type = dataclass_type
         self._fout = path.open(write_mode.abbreviation)
-
         self._writer = DictWriter(
             f=self._fout,
             fieldnames=self._fieldnames,
