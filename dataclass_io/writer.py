@@ -24,8 +24,35 @@ WritableFileHandle: TypeAlias = TextIOWrapper | IO | TextIO
 
 @unique
 class WriteMode(Enum):
-    APPEND = "a"
-    WRITE = "w"
+    """
+    The mode in which to open the file.
+
+    Attributes:
+        value: The mode.
+        abbreviation: The short version of the mode (used with Python's `open()`).
+    """
+
+    value: str
+    abbreviation: str
+
+    def __new__(cls, value: str, abbreviation: str) -> "WriteMode":
+        enum = object.__new__(cls)
+        enum._value_ = value
+
+        return enum
+
+    # NB: Specifying the additional fields in the `__init__` method instead of `__new__` is
+    # necessary in order to construct `WriteMode` from only the value (e.g. `WriteMode("append")`).
+    # Otherwise, `mypy` complains about a missing positional argument.
+    # https://stackoverflow.com/a/54732120
+    def __init__(self, _: str, abbreviation: str = None):
+        self.abbreviation = abbreviation
+
+    WRITE = "write", "w"
+    """Write to a new file."""
+
+    APPEND = "append", "a"
+    """Append to an existing file."""
 
 
 class DataclassWriter:
@@ -33,7 +60,7 @@ class DataclassWriter:
         self,
         path: Path,
         dataclass_type: type[DataclassInstance],
-        mode: str = "w",
+        mode: str = "write",
         delimiter: str = "\t",
         overwrite: bool = True,
         include_fields: list[str] | None = None,
@@ -55,7 +82,7 @@ class DataclassWriter:
         try:
             write_mode = WriteMode(mode)
         except ValueError:
-            raise ValueError(f"`mode` must be either 'a' (append) or 'w' (write): {mode}") from None
+            raise ValueError(f"`mode` must be either 'write' or 'append': {mode}") from None
 
         assert_dataclass_is_valid(dataclass_type)
 
@@ -79,7 +106,7 @@ class DataclassWriter:
             raise NotImplementedError
 
         self._dataclass_type = dataclass_type
-        self._fout = path.open(mode)
+        self._fout = path.open(write_mode.abbreviation)
 
         self._writer = DictWriter(
             f=self._fout,

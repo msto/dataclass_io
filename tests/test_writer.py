@@ -15,7 +15,7 @@ class FakeDataclass:
 def test_writer(tmp_path: Path) -> None:
     fpath = tmp_path / "test.txt"
 
-    with DataclassWriter(path=fpath, mode="w", dataclass_type=FakeDataclass) as writer:
+    with DataclassWriter(path=fpath, mode="write", dataclass_type=FakeDataclass) as writer:
         writer.write(FakeDataclass(foo="abc", bar=1))
         writer.write(FakeDataclass(foo="def", bar=2))
 
@@ -34,7 +34,7 @@ def test_writer_writeall(tmp_path: Path) -> None:
         FakeDataclass(foo="abc", bar=1),
         FakeDataclass(foo="def", bar=2),
     ]
-    with DataclassWriter(path=fpath, mode="w", dataclass_type=FakeDataclass) as writer:
+    with DataclassWriter(path=fpath, mode="write", dataclass_type=FakeDataclass) as writer:
         writer.writeall(data)
 
     with open(fpath, "r") as f:
@@ -55,7 +55,7 @@ def test_writer_include_fields(tmp_path: Path) -> None:
     ]
     with DataclassWriter(
         path=fpath,
-        mode="w",
+        mode="write",
         dataclass_type=FakeDataclass,
         include_fields=["foo"],
     ) as writer:
@@ -79,7 +79,7 @@ def test_writer_include_fields_reorders(tmp_path: Path) -> None:
     ]
     with DataclassWriter(
         path=fpath,
-        mode="w",
+        mode="write",
         dataclass_type=FakeDataclass,
         include_fields=["bar", "foo"],
     ) as writer:
@@ -104,7 +104,7 @@ def test_writer_exclude_fields(tmp_path: Path) -> None:
     ]
     with DataclassWriter(
         path=fpath,
-        mode="w",
+        mode="write",
         dataclass_type=FakeDataclass,
         exclude_fields=["bar"],
     ) as writer:
