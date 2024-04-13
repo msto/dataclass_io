@@ -78,20 +78,19 @@ class DataclassWriter:
             assert_file_is_appendable(path, dataclass_type=dataclass_type)
             raise NotImplementedError
 
-        self.dataclass_type = dataclass_type
-        self.delimiter = delimiter
+        self._dataclass_type = dataclass_type
         self._fout = path.open(mode)
-
-        # TODO: optionally add preface
-        # If we aren't appending, write the header before any rows
-        if write_mode is WriteMode.WRITE:
-            self._fout.write(self.delimiter.join(self._fieldnames) + "\n")
 
         self._writer = DictWriter(
             f=self._fout,
             fieldnames=self._fieldnames,
-            delimiter=self.delimiter,
+            delimiter=delimiter,
         )
+
+        # TODO: permit writing comment/preface rows before header
+        # If we aren't appending, write the header before any rows
+        if write_mode is WriteMode.WRITE:
+            self._writer.writeheader()
 
     def __enter__(self) -> "DataclassWriter":
         return self
@@ -108,6 +107,22 @@ class DataclassWriter:
         self._fout.close()
 
     def write(self, dataclass_instance: DataclassInstance) -> None:
+        """
+        Write a single dataclass instance to file.
+
+        The dataclass is converted to a dictionary and then written using the underlying
+        `csv.DictWriter`. If the `DataclassWriter` was created using the `include_fields` or
+        `exclude_fields` arguments, the attributes of the dataclass are subset and/or reordered
+        accordingly before writing.
+
+        Args:
+            dataclass_instance: An instance of the specified dataclass.
+        """
+
+        # TODO: consider permitting other dataclass types *if* they contain the required attributes
+        if not isinstance(dataclass_instance, self._dataclass_type):
+            raise ValueError(f"Must provide instances of {self._dataclass_type.__name__}")
+
         # Filter and/or re-order output fields if necessary
         row = asdict(dataclass_instance)
         row = {fieldname: row[fieldname] for fieldname in self._fieldnames}
@@ -115,5 +130,16 @@ class DataclassWriter:
         self._writer.writerow(row)
 
     def writeall(self, dataclass_instances: Iterable[DataclassInstance]) -> None:
+        """
+        Write multiple dataclass instances to file.
+
+        Each dataclass is converted to a dictionary and then written using the underlying
+        `csv.DictWriter`. If the `DataclassWriter` was created using the `include_fields` or
+        `exclude_fields` arguments, the attributes of each dataclass are subset and/or reordered
+        accordingly before writing.
+
+        Args:
+            dataclass_instances: A sequence of instances of the specified dataclass.
+        """
         for dataclass_instance in dataclass_instances:
             self.write(dataclass_instance)
