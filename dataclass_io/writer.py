@@ -71,6 +71,21 @@ class DataclassWriter:
         Args:
             path: Path to the file to write.
             dataclass_type: Dataclass type.
+            mode: Either `"write"` or `"append"`.
+                If `"write"`, the specified file `path` must not already exist unless
+                `overwrite=True` is specified.
+                If `"append"`, the specified file `path` must already exist and contain a header row
+                matching the specified dataclass and any specified `include_fields` or
+                `exclude_fields`.
+            delimiter: The output file delimiter.
+            overwrite: If `True`, and `mode="write"`, the file specified at `path` will be
+                overwritten if it exists.
+            include_fields: If specified, only the listed fieldnames will be included when writing
+                records to file. Fields will be written in the order provided.
+                May not be used together with `exclude_fields`.
+            exclude_fields: If specified, any listed fieldnames will be excluded when writing
+                records to file.
+                May not be used together with `include_fields`.
 
         Raises:
             FileNotFoundError: If the input file does not exist.
