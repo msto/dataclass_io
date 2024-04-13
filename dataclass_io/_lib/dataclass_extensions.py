@@ -1,4 +1,5 @@
-
+from dataclasses import fields
+from dataclasses import is_dataclass
 from typing import Any
 from typing import ClassVar
 from typing import Protocol
@@ -16,3 +17,14 @@ class DataclassInstance(Protocol):
     """
 
     __dataclass_fields__: ClassVar[dict[str, Any]]
+
+
+def fieldnames(dataclass_type: type[DataclassInstance]) -> list[str]:
+    """
+    Return the fieldnames of the specified dataclass.
+    """
+
+    if not is_dataclass(dataclass_type):
+        raise TypeError(f"The provided type must be a dataclass: {dataclass_type.__name__}")
+
+    return [f.name for f in fields(dataclass_type)]

@@ -5,6 +5,7 @@ import pytest
 
 from dataclass_io._lib.assertions import assert_dataclass_is_valid
 from dataclass_io._lib.assertions import assert_file_is_readable
+from dataclass_io._lib.assertions import assert_file_is_writable
 
 
 def test_assert_dataclass_is_valid() -> None:
@@ -80,3 +81,54 @@ def test_assert_file_is_readable_raises_if_file_is_unreadable(tmp_path: Path) ->
 
     with pytest.raises(PermissionError, match="The input file is not readable: "):
         assert_file_is_readable(fpath)
+
+
+def test_assert_file_is_writable(tmp_path: Path) -> None:
+    """
+    Test that we can validate if a file path is valid for writing.
+    """
+
+    # Non-existing files are writable
+    fpath = tmp_path / "test.txt"
+    try:
+        assert_file_is_writable(fpath, overwrite=False)
+    except Exception:
+        raise AssertionError("Failed to validate a valid file") from None
+
+    # Existing files are writable if `overwrite=True`
+    fpath.touch()
+    try:
+        assert_file_is_writable(fpath, overwrite=True)
+    except Exception:
+        raise AssertionError("Failed to validate a valid file") from None
+
+
+def test_assert_file_is_writable_raises_if_file_exists(tmp_path: Path) -> None:
+    """
+    Test that we raise an error if the output file already exists when `overwrite=False`.
+    """
+
+    fpath = tmp_path / "test.txt"
+    fpath.touch()
+
+    with pytest.raises(FileExistsError, match="The output file already exists: "):
+        assert_file_is_writable(tmp_path, overwrite=False)
+
+
+def test_assert_file_is_writable_raises_if_file_is_directory(tmp_path: Path) -> None:
+    """
+    Test that we raise an error if the output file path exists and is a directory.
+    """
+    with pytest.raises(IsADirectoryError, match="The output file path is a directory: "):
+        assert_file_is_writable(tmp_path, overwrite=True)
+
+
+def test_assert_file_is_writable_raises_if_parent_directory_does_not_exist(tmp_path: Path) -> None:
+    """
+    Test that we raise an error if the parent directory of the output file path does not exist.
+    """
+
+    fpath = tmp_path / "abc" / "test.txt"
+
+    with pytest.raises(FileNotFoundError, match="The specified directory for the output"):
+        assert_file_is_writable(fpath, overwrite=True)
