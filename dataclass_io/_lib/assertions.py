@@ -7,6 +7,8 @@ from pathlib import Path
 
 from dataclass_io._lib.dataclass_extensions import DataclassInstance
 from dataclass_io._lib.dataclass_extensions import fieldnames
+from dataclass_io._lib.file import FileFormat
+from dataclass_io._lib.file import FileHeader
 from dataclass_io._lib.file import get_header
 
 
@@ -68,7 +70,10 @@ def assert_file_is_writable(path: Path, overwrite: bool = True) -> None:
             )
 
 
-def assert_file_is_appendable(path: Path, dataclass_type: type[DataclassInstance]) -> None:
+def assert_file_is_appendable(
+    path: Path,
+    dataclass_type: type[DataclassInstance],
+) -> None:
     if not path.exists():
         raise FileNotFoundError(f"The specified output file does not exist: {path}")
 
@@ -89,17 +94,29 @@ def assert_file_is_appendable(path: Path, dataclass_type: type[DataclassInstance
             "dataclass before appending to it."
         )
 
-    # TODO: pass delimiter and header_comment_char to get_header
-    with path.open("r") as f:
-        header = get_header(f)
-        if header is None:
-            raise ValueError(f"Could not find a header in the specified output file: {path}")
 
-        if header.fieldnames != fieldnames(dataclass_type):
-            raise ValueError(
-                "The specified output file does not have the same field names as the provided "
-                f"dataclass {path}"
-            )
+def assert_file_header_matches_dataclass(
+    path: Path,
+    dataclass_type: type[DataclassInstance],
+    file_format: FileFormat,
+) -> None:
+    """
+    Check that the specified file has a header and its fields match those of the provided dataclass.
+    """
+    with path.open("r") as fin:
+        header: FileHeader = get_header(fin, file_format=file_format)
+
+    if header is None:
+        raise ValueError(f"Could not find a header in the provided file: {path}")
+
+    if header.fieldnames != fieldnames(dataclass_type):
+        raise ValueError(
+            "The provided file does not have the same field names as the provided dataclass:\n"
+            f"\tDataclass: {dataclass_type.__name__}\n"
+            f"\tFile: {path}\n"
+            f"\tDataclass fields: {', '.join(fieldnames(dataclass_type))}\n"
+            f"\tFile: {', '.join(header.fieldnames)}\n"
+        )
 
 
 def assert_dataclass_is_valid(dataclass_type: type[DataclassInstance]) -> None:

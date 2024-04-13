@@ -44,6 +44,19 @@ class WriteMode(Enum):
     """Append to an existing file."""
 
 
+@dataclass(kw_only=True)
+class FileFormat:
+    """
+    Parameters describing the format and configuration of the dataclass file.
+
+    Most of these parameters, if specified, are passed through to `csv.DictReader`/`csv.DictWriter`
+    or `csv.reader`/`csv.writer`.
+    """
+
+    delimiter: str = "\t"
+    comment: str = "#"
+
+
 @dataclass(frozen=True, kw_only=True)
 class FileHeader:
     """
@@ -63,8 +76,7 @@ class FileHeader:
 
 def get_header(
     reader: ReadableFileHandle,
-    delimiter: str = "\t",
-    header_comment_char: str = "#",
+    file_format: FileFormat,
 ) -> Optional[FileHeader]:
     """
     Read the header from an open file.
@@ -91,13 +103,13 @@ def get_header(
     preface: list[str] = []
 
     for line in reader:
-        if line.startswith(header_comment_char) or line.strip() == "":
+        if line.startswith(file_format.comment) or line.strip() == "":
             preface.append(line.strip())
         else:
             break
     else:
         return None
 
-    fieldnames = line.strip().split(delimiter)
+    fieldnames = line.strip().split(file_format.delimiter)
 
     return FileHeader(preface=preface, fieldnames=fieldnames)

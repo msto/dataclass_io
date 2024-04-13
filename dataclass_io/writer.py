@@ -85,6 +85,7 @@ class DataclassWriter:
             assert_file_is_writable(path, overwrite=overwrite)
         else:
             assert_file_is_appendable(path, dataclass_type=dataclass_type)
+            # TODO: check that header matches fieldnames
             raise NotImplementedError
 
         self._dataclass_type = dataclass_type
