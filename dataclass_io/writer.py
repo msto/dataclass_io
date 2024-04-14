@@ -8,10 +8,12 @@ from typing import Type
 
 from dataclass_io._lib.assertions import assert_dataclass_is_valid
 from dataclass_io._lib.assertions import assert_fieldnames_are_dataclass_attributes
+from dataclass_io._lib.assertions import assert_file_header_matches_dataclass
 from dataclass_io._lib.assertions import assert_file_is_appendable
 from dataclass_io._lib.assertions import assert_file_is_writable
 from dataclass_io._lib.dataclass_extensions import DataclassInstance
 from dataclass_io._lib.dataclass_extensions import fieldnames
+from dataclass_io._lib.file import FileFormat
 from dataclass_io._lib.file import WritableFileHandle
 from dataclass_io._lib.file import WriteMode
 
@@ -65,30 +67,21 @@ class DataclassWriter:
         except ValueError:
             raise ValueError(f"`mode` must be either 'write' or 'append': {mode}") from None
 
+        file_format = FileFormat(delimiter=delimiter)
+
         assert_dataclass_is_valid(dataclass_type)
-
-        self._fieldnames: list[str]
-        if include_fields is not None and exclude_fields is not None:
-            raise ValueError(
-                "Only one of `include_fields` and `exclude_fields` may be specified, not both."
-            )
-        elif exclude_fields is not None:
-            assert_fieldnames_are_dataclass_attributes(exclude_fields, dataclass_type)
-            self._fieldnames = [f for f in fieldnames(dataclass_type) if f not in exclude_fields]
-        elif include_fields is not None:
-            assert_fieldnames_are_dataclass_attributes(include_fields, dataclass_type)
-            self._fieldnames = include_fields
-        else:
-            self._fieldnames = fieldnames(dataclass_type)
-
         if write_mode is WriteMode.WRITE:
             assert_file_is_writable(path, overwrite=overwrite)
         else:
             assert_file_is_appendable(path, dataclass_type=dataclass_type)
-            # TODO: check that header matches fieldnames
-            raise NotImplementedError
+            assert_file_header_matches_dataclass(path, dataclass_type, file_format)
 
         self._dataclass_type = dataclass_type
+        self._fieldnames = _validate_output_fieldnames(
+            dataclass_type=dataclass_type,
+            include_fields=include_fields,
+            exclude_fields=exclude_fields,
+        )
         self._fout = path.open(write_mode.abbreviation)
         self._writer = DictWriter(
             f=self._fout,
@@ -152,3 +145,39 @@ class DataclassWriter:
         """
         for dataclass_instance in dataclass_instances:
             self.write(dataclass_instance)
+
+
+def _validate_output_fieldnames(
+    dataclass_type: type[DataclassInstance],
+    include_fields: list[str] | None = None,
+    exclude_fields: list[str] | None = None,
+) -> list[str]:
+    """
+    Subset and/or re-order the dataclass's fieldnames based on the specified include/exclude lists.
+
+    * Only one of `include_fields` and `exclude_fields` may be specified.
+    * All fieldnames specified in `include_fields` must be fields on `dataclass_type`. If this
+      argument is specified, fields will be returned in the order they appear in the list.
+    * All fieldnames specified in `exclude_fields` must be fields on `dataclass_type`. (This is
+      technically unnecessary, but is a safeguard against passing an incorrect list.)
+    * If neither `include_fields` or `exclude_fields` are specified, return the `dataclass_type`'s
+      fieldnames.
+
+    Raises:
+        ValueError: If both `include_fields` and `exclude_fields` are specified.
+    """
+
+    if include_fields is not None and exclude_fields is not None:
+        raise ValueError(
+            "Only one of `include_fields` and `exclude_fields` may be specified, not both."
+        )
+    elif exclude_fields is not None:
+        assert_fieldnames_are_dataclass_attributes(exclude_fields, dataclass_type)
+        output_fieldnames = [f for f in fieldnames(dataclass_type) if f not in exclude_fields]
+    elif include_fields is not None:
+        assert_fieldnames_are_dataclass_attributes(include_fields, dataclass_type)
+        output_fieldnames = include_fields
+    else:
+        output_fieldnames = fieldnames(dataclass_type)
+
+    return output_fieldnames
