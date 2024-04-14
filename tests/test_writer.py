@@ -64,12 +64,23 @@ def test_writer_append(tmp_path: Path) -> None:
             next(f)
 
 
-def test_writer_append_raises_if_no_header(tmp_path: Path) -> None:
-    """Test that we raise an error if we try to append to a file with no header."""
+def test_writer_append_raises_if_empty(tmp_path: Path) -> None:
+    """Test that we raise an error if we try to append to an empty file."""
     fpath = tmp_path / "test.txt"
     fpath.touch()
 
-    with pytest.raises(ValueError, match="Could not find a header"):
+    with pytest.raises(ValueError, match="The specified output file is empty"):
+        with DataclassWriter(path=fpath, mode="append", dataclass_type=FakeDataclass) as writer:
+            writer.write(FakeDataclass(foo="abc", bar=1))
+
+
+def test_writer_append_raises_if_no_header(tmp_path: Path) -> None:
+    """Test that we raise an error if we try to append to a file with no header."""
+    fpath = tmp_path / "test.txt"
+    with fpath.open("w") as fout:
+        fout.write("abc\t1\n")
+
+    with pytest.raises(ValueError, match="The provided file does not have the same field names"):
         with DataclassWriter(path=fpath, mode="append", dataclass_type=FakeDataclass) as writer:
             writer.write(FakeDataclass(foo="abc", bar=1))
 
@@ -84,10 +95,7 @@ def test_writer_append_raises_if_header_does_not_match(tmp_path: Path) -> None:
     with fpath.open("w") as fout:
         fout.write("foo\tbar\tbaz\n")
 
-    with pytest.raises(
-        ValueError,
-        match="The provided file does not have the same fieldnames",
-    ):
+    with pytest.raises(ValueError, match="The provided file does not have the same field names"):
         with DataclassWriter(path=fpath, mode="append", dataclass_type=FakeDataclass) as writer:
             writer.write(FakeDataclass(foo="abc", bar=1))
 
