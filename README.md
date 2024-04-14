@@ -22,7 +22,7 @@ class MyData:
     bar: str
 
 
-with DataclassReader(path, MyData) as reader:
+with DataclassReader("test.tsv", MyData) as reader:
     for record in reader:
         do_something(record.foo)
 ```
@@ -39,7 +39,7 @@ class MyData:
     bar: str
 
 
-with DataclassWriter(path, MyData) as writer:
+with DataclassWriter("test.tsv", MyData) as writer:
     for i in range(3):
         record = MyData(foo=i, bar="something")
         writer.write(record)
