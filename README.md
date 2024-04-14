@@ -22,9 +22,14 @@ class MyData:
     bar: str
 
 
-with DataclassReader(path, MyData) as reader:
+with open("test.tsv", "w") as testfile:
+    testfile.write("foo\tbar\n")
+    testfile.write("1\tabc\n")
+    testfile.write("2\tdef\n")
+
+with DataclassReader("test.tsv", MyData) as reader:
     for record in reader:
-        do_something(record.foo)
+        print(record.foo)
 ```
 
 ### Writing
@@ -39,7 +44,7 @@ class MyData:
     bar: str
 
 
-with DataclassWriter(path, MyData) as writer:
+with DataclassWriter("test.tsv", MyData) as writer:
     for i in range(3):
         record = MyData(foo=i, bar="something")
         writer.write(record)
