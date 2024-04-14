@@ -152,7 +152,20 @@ def _validate_output_fieldnames(
     include_fields: list[str] | None = None,
     exclude_fields: list[str] | None = None,
 ) -> list[str]:
-    """ """
+    """
+    Subset and/or re-order the dataclass's fieldnames based on the specified include/exclude lists.
+
+    * Only one of `include_fields` and `exclude_fields` may be specified.
+    * All fieldnames specified in `include_fields` must be fields on `dataclass_type`. If this
+      argument is specified, fields will be returned in the order they appear in the list.
+    * All fieldnames specified in `exclude_fields` must be fields on `dataclass_type`. (This is
+      technically unnecessary, but is a safeguard against passing an incorrect list.)
+    * If neither `include_fields` or `exclude_fields` are specified, return the `dataclass_type`'s
+      fieldnames.
+
+    Raises:
+        ValueError: If both `include_fields` and `exclude_fields` are specified.
+    """
 
     if include_fields is not None and exclude_fields is not None:
         raise ValueError(
