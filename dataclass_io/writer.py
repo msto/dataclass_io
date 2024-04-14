@@ -26,7 +26,7 @@ class DataclassWriter:
 
     def __init__(
         self,
-        path: Path,
+        filename: str | Path,
         dataclass_type: type[DataclassInstance],
         mode: str = "write",
         delimiter: str = "\t",
@@ -62,6 +62,8 @@ class DataclassWriter:
             TypeError: If the provided type is not a dataclass.
         """
 
+        filepath: Path = filename if isinstance(filename, Path) else Path(filename)
+
         try:
             write_mode = WriteMode(mode)
         except ValueError:
@@ -71,10 +73,10 @@ class DataclassWriter:
 
         assert_dataclass_is_valid(dataclass_type)
         if write_mode is WriteMode.WRITE:
-            assert_file_is_writable(path, overwrite=overwrite)
+            assert_file_is_writable(filepath, overwrite=overwrite)
         else:
-            assert_file_is_appendable(path, dataclass_type=dataclass_type)
-            assert_file_header_matches_dataclass(path, dataclass_type, file_format)
+            assert_file_is_appendable(filepath, dataclass_type=dataclass_type)
+            assert_file_header_matches_dataclass(filepath, dataclass_type, file_format)
 
         self._dataclass_type = dataclass_type
         self._fieldnames = _validate_output_fieldnames(
@@ -82,7 +84,7 @@ class DataclassWriter:
             include_fields=include_fields,
             exclude_fields=exclude_fields,
         )
-        self._fout = path.open(write_mode.abbreviation)
+        self._fout = filepath.open(write_mode.abbreviation)
         self._writer = DictWriter(
             f=self._fout,
             fieldnames=self._fieldnames,

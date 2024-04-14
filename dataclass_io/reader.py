@@ -24,7 +24,7 @@ class DataclassReader:
 
     def __init__(
         self,
-        path: Path,
+        filename: str | Path,
         dataclass_type: type[DataclassInstance],
         delimiter: str = "\t",
         comment: str = "#",
@@ -42,17 +42,18 @@ class DataclassReader:
             TypeError: If the provided type is not a dataclass.
         """
 
+        filepath: Path = filename if isinstance(filename, Path) else Path(filename)
         file_format = FileFormat(
             delimiter=delimiter,
             comment=comment,
         )
 
         assert_dataclass_is_valid(dataclass_type)
-        assert_file_is_readable(path)
-        assert_file_header_matches_dataclass(path, dataclass_type, file_format)
+        assert_file_is_readable(filepath)
+        assert_file_header_matches_dataclass(filepath, dataclass_type, file_format)
 
         self._dataclass_type = dataclass_type
-        self._fin = path.open("r")
+        self._fin = filepath.open("r")
         self._header = get_header(reader=self._fin, file_format=file_format)
         self._reader = DictReader(
             f=self._fin,
