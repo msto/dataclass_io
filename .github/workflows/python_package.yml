@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        PYTHON_VERSION: ["3.11", "3.12"]
+        PYTHON_VERSION: ["3.10", "3.11", "3.12"]
     steps:
       - uses: actions/checkout@v4
 
@@ -32,4 +32,3 @@ jobs:
 
       - name: Test the library
         run: poetry run pytest
-
