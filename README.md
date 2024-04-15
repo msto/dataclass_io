@@ -7,6 +7,14 @@
 
 Dataclass IO.
 
+## Installation
+
+`dataclass_io` may be installed via `pip`:
+
+```console
+pip install dataclass_io
+```
+
 ## Quickstart
 
 ### Reading
