@@ -1,0 +1,32 @@
+from typing import Union, Optional, Any
+from dataclass_io._lib.typing_extensions import is_optional
+from dataclass_io._lib.typing_extensions import is_union
+
+
+def test_is_union() -> None:
+    """Test that we can identify a union type."""
+
+    assert is_union(Union[int, None])
+    assert is_union(Union[int, str])
+    assert is_union(Union[int, str, float])
+    assert is_union(Optional[int])
+
+    assert not is_union(int)
+    assert not is_union(str)
+    assert not is_union(dict[int, str])
+
+
+def test_is_optional() -> None:
+    """Test that we can identify an Optional type."""
+
+    assert is_optional(Union[int, None])
+    assert is_optional(int | None)
+    assert is_optional(Optional[int])
+
+    assert is_optional(Union[dict[str, Any], None])
+    assert is_optional(dict[str, Any] | None)
+    assert is_optional(Optional[dict[str, Any]])
+
+    assert not is_optional(int)
+    assert not is_optional(Union[int, str])
+    assert not is_optional(dict[str, Any])
