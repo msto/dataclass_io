@@ -1,7 +1,6 @@
 from contextlib import contextmanager
 from csv import DictWriter
 from dataclasses import asdict
-from io import TextIOWrapper
 from pathlib import Path
 from typing import Any
 from typing import Iterable
@@ -31,6 +30,7 @@ class DataclassWriter:
         delimiter: str = "\t",
         include_fields: list[str] | None = None,
         exclude_fields: list[str] | None = None,
+        write_header: bool = True,
         **kwds: Any,
     ) -> None:
         """
@@ -44,6 +44,9 @@ class DataclassWriter:
             exclude_fields: If specified, any listed fieldnames will be excluded when writing
                 records to file.
                 May not be used together with `include_fields`.
+            write_header: If True, a header row consisting of the dataclass's fieldnames will be
+                written before any records are written (including or excluding any fields specified
+                by `include_fields` or `exclude_fields`).
 
         Raises:
             TypeError: If the provided type is not a dataclass.
@@ -65,7 +68,8 @@ class DataclassWriter:
         )
 
         # TODO: permit writing comment/preface rows before header
-        self._writer.writeheader()
+        if write_header:
+            self._writer.writeheader()
 
     def write(self, dataclass_instance: DataclassInstance) -> None:
         """
@@ -176,11 +180,12 @@ class DataclassWriter:
                 comment_prefix=comment_prefix,
             )
 
-        fout = TextIOWrapper(filepath.open(write_mode.abbreviation))
+        fout = filepath.open(write_mode.abbreviation)
         try:
             yield cls(
                 fout=fout,
                 dataclass_type=dataclass_type,
+                write_header=(write_mode is WriteMode.WRITE),  # Skip header when appending
                 **kwds,
             )
         finally:

@@ -2,13 +2,15 @@ from dataclasses import dataclass
 from enum import Enum
 from enum import unique
 from io import TextIOWrapper
+from typing import IO
+from typing import Any
 from typing import Optional
 from typing import TypeAlias
 
 ReadableFileHandle: TypeAlias = TextIOWrapper
 """A file handle open for reading."""
 
-WritableFileHandle: TypeAlias = TextIOWrapper
+WritableFileHandle: TypeAlias = TextIOWrapper | IO[Any]
 """A file handle open for writing."""
 
 
