@@ -83,3 +83,36 @@ class DataclassReader:
         row = next(self._reader)
 
         return row_to_dataclass(row, self._dataclass_type)
+
+    @classmethod
+    @contextmanager
+    def open(
+        cls,
+        filename: str | Path,
+        dataclass_type: type[DataclassInstance],
+        comment_prefix: str = DEFAULT_COMMENT_PREFIX,
+    ) -> Iterator["DataclassReader"]:
+        """
+        Open a new `DataclassReader` from a file path.
+
+        Raises:
+            FileNotFoundError: If the input file does not exist.
+            IsADirectoryError: If the input file path is a directory.
+            PermissionError: If the input file is not readable.
+        """
+        filepath: Path = Path(filename)
+
+        assert_dataclass_is_valid(dataclass_type)
+        assert_file_is_readable(filepath)
+        assert_file_header_matches_dataclass(filepath, dataclass_type, comment_prefix=comment_prefix)
+
+        fin = filepath.open("r")
+        try:
+            yield cls(
+                fin=fin,
+                dataclass_type=dataclass_type,
+                delimiter=delimiter,
+                comment=comment,
+            )
+        finally:
+            fin.close()
