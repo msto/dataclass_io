@@ -91,6 +91,8 @@ def get_header(
         None if the file was empty or contained only comments or empty lines.
     """
 
+    # TODO: optionally reset file handle to the original position after reading the header
+
     preface: list[str] = []
 
     for line in reader:
