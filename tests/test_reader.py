@@ -17,7 +17,7 @@ def test_reader(tmp_path: Path) -> None:
         f.write("foo\tbar\n")
         f.write("abc\t1\n")
 
-    with DataclassReader(filename=fpath, dataclass_type=FakeDataclass) as reader:
+    with DataclassReader.open(filename=fpath, dataclass_type=FakeDataclass) as reader:
         rows = [row for row in reader]
 
     assert rows[0] == FakeDataclass(foo="abc", bar=1)
@@ -31,7 +31,7 @@ def test_reader_from_str(tmp_path: Path) -> None:
         f.write("foo\tbar\n")
         f.write("abc\t1\n")
 
-    with DataclassReader(filename=str(fpath), dataclass_type=FakeDataclass) as reader:
+    with DataclassReader.open(filename=str(fpath), dataclass_type=FakeDataclass) as reader:
         rows = [row for row in reader]
 
     assert rows[0] == FakeDataclass(foo="abc", bar=1)
