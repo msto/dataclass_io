@@ -5,7 +5,9 @@
 [![MyPy Checked](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://docs.astral.sh/ruff/)
 
-Dataclass IO.
+Read and write dataclasses.
+
+`dataclass_io` provides similar functionality to the standard library's `csv.DictReader` and `csv.DictWriter`, and adds type safety.
 
 ## Installation
 
@@ -35,7 +37,7 @@ with open("test.tsv", "w") as testfile:
     testfile.write("1\tabc\n")
     testfile.write("2\tdef\n")
 
-with DataclassReader("test.tsv", MyData) as reader:
+with DataclassReader.open("test.tsv", MyData) as reader:
     for record in reader:
         print(record.foo)
 ```
@@ -52,7 +54,7 @@ class MyData:
     bar: str
 
 
-with DataclassWriter("test.tsv", MyData) as writer:
+with DataclassWriter.open("test.tsv", MyData) as writer:
     for i in range(3):
         record = MyData(foo=i, bar="something")
         writer.write(record)
