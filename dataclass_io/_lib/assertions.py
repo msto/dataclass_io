@@ -7,8 +7,8 @@ from pathlib import Path
 
 from dataclass_io._lib.dataclass_extensions import DataclassInstance
 from dataclass_io._lib.dataclass_extensions import fieldnames
-from dataclass_io._lib.file import FileFormat
 from dataclass_io._lib.file import FileHeader
+from dataclass_io._lib.file import ReadableFileHandle
 from dataclass_io._lib.file import get_header
 
 
@@ -96,26 +96,34 @@ def assert_file_is_appendable(
 
 
 def assert_file_header_matches_dataclass(
-    path: Path,
+    file: Path | ReadableFileHandle,
     dataclass_type: type[DataclassInstance],
-    file_format: FileFormat,
+    delimiter: str,
+    comment_prefix: str,
 ) -> None:
     """
     Check that the specified file has a header and its fields match those of the provided dataclass.
     """
-    with path.open("r") as fin:
-        header: FileHeader = get_header(fin, file_format=file_format)
+    header: FileHeader | None
+    if isinstance(file, Path):
+        with file.open("r") as fin:
+            header = get_header(fin, delimiter=delimiter, comment_prefix=comment_prefix)
+    else:
+        pos = file.tell()
+        try:
+            header = get_header(file, delimiter=delimiter, comment_prefix=comment_prefix)
+        finally:
+            file.seek(pos)
 
     if header is None:
-        raise ValueError(f"Could not find a header in the provided file: {path}")
+        raise ValueError("Could not find a header in the provided file")
 
     if header.fieldnames != fieldnames(dataclass_type):
         raise ValueError(
             "The provided file does not have the same field names as the provided dataclass:\n"
             f"\tDataclass: {dataclass_type.__name__}\n"
-            f"\tFile: {path}\n"
             f"\tDataclass fields: {', '.join(fieldnames(dataclass_type))}\n"
-            f"\tFile: {', '.join(header.fieldnames)}\n"
+            f"\tFile fields: {', '.join(header.fieldnames)}\n"
         )
 
 

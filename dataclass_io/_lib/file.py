@@ -3,12 +3,15 @@ from enum import Enum
 from enum import unique
 from io import TextIOWrapper
 from typing import IO
+from typing import Any
 from typing import Optional
-from typing import TextIO
 from typing import TypeAlias
 
-ReadableFileHandle: TypeAlias = TextIOWrapper | IO | TextIO
-WritableFileHandle: TypeAlias = TextIOWrapper | IO | TextIO
+ReadableFileHandle: TypeAlias = TextIOWrapper
+"""A file handle open for reading."""
+
+WritableFileHandle: TypeAlias = TextIOWrapper | IO[Any]
+"""A file handle open for writing."""
 
 
 @unique
@@ -44,19 +47,6 @@ class WriteMode(Enum):
     """Append to an existing file."""
 
 
-@dataclass(kw_only=True)
-class FileFormat:
-    """
-    Parameters describing the format and configuration of the dataclass file.
-
-    Most of these parameters, if specified, are passed through to `csv.DictReader`/`csv.DictWriter`
-    or `csv.reader`/`csv.writer`.
-    """
-
-    delimiter: str = "\t"
-    comment: str = "#"
-
-
 @dataclass(frozen=True, kw_only=True)
 class FileHeader:
     """
@@ -76,7 +66,8 @@ class FileHeader:
 
 def get_header(
     reader: ReadableFileHandle,
-    file_format: FileFormat,
+    delimiter: str,
+    comment_prefix: str,
 ) -> Optional[FileHeader]:
     """
     Read the header from an open file.
@@ -100,16 +91,18 @@ def get_header(
         None if the file was empty or contained only comments or empty lines.
     """
 
+    # TODO: optionally reset file handle to the original position after reading the header
+
     preface: list[str] = []
 
     for line in reader:
-        if line.startswith(file_format.comment) or line.strip() == "":
+        if line.startswith(comment_prefix) or line.strip() == "":
             preface.append(line.strip())
         else:
             break
     else:
         return None
 
-    fieldnames = line.strip().split(file_format.delimiter)
+    fieldnames = line.strip().split(delimiter)
 
     return FileHeader(preface=preface, fieldnames=fieldnames)
