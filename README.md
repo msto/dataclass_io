@@ -37,7 +37,8 @@ with open("test.tsv", "w") as testfile:
     testfile.write("1\tabc\n")
     testfile.write("2\tdef\n")
 
-with DataclassReader.open("test.tsv", MyData) as reader:
+with open("test.tsv", "r") as fin:
+    reader = DataclassReader(fin, MyData)
     for record in reader:
         print(record.foo)
 ```
@@ -54,7 +55,8 @@ class MyData:
     bar: str
 
 
-with DataclassWriter.open("test.tsv", MyData) as writer:
+with open("test.tsv", "w") as fout:
+    writer = DataclassWriter(fout, MyData)
     for i in range(3):
         record = MyData(foo=i, bar="something")
         writer.write(record)
