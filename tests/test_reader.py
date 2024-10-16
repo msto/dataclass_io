@@ -4,7 +4,7 @@ from pathlib import Path
 from dataclass_io.reader import DataclassReader
 
 
-@dataclass
+@dataclass(kw_only=True, eq=True)
 class FakeDataclass:
     foo: str
     bar: int

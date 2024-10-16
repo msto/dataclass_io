@@ -4,6 +4,9 @@ from typing import Any
 from typing import ClassVar
 from typing import Protocol
 
+from pydantic.dataclasses import dataclass as pydantic_dataclass
+from pydantic.dataclasses import is_pydantic_dataclass
+
 
 class DataclassInstance(Protocol):
     """
@@ -42,11 +45,22 @@ def row_to_dataclass(
         dataclass_type: The dataclass to which the row will be casted.
     """
 
-    coerced_values: dict[str, Any] = {}
+    data: DataclassInstance
 
-    # Coerce each value in the row to the type of the corresponding field
-    for field in fields(dataclass_type):
-        value = row[field.name]
-        coerced_values[field.name] = field.type(value)
+    # TODO support classes which inherit from `pydantic.BaseModel`
+    if is_pydantic_dataclass(dataclass_type):
+        # If we received a pydantic dataclass, we can simply use its validation
+        data = dataclass_type(**row)
+    else:
+        # If we received a stdlib dataclass, we use pydantic's dataclass decorator to create a
+        # version of the dataclass with validation. We instantiate from this version to take
+        # advantage of pydantic's validation, but then unpack the validated data in order to return
+        # an instance of the user-specified dataclass.
+        pydantic_cls = pydantic_dataclass(dataclass_type)
+        validated_data = pydantic_cls(**row)
+        unpacked_data = {
+            field.name: getattr(validated_data, field.name) for field in fields(dataclass_type)
+        }
+        data = dataclass_type(**unpacked_data)
 
-    return dataclass_type(**coerced_values)
+    return data
