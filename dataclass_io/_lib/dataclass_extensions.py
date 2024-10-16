@@ -56,11 +56,23 @@ def row_to_dataclass(
         # version of the dataclass with validation. We instantiate from this version to take
         # advantage of pydantic's validation, but then unpack the validated data in order to return
         # an instance of the user-specified dataclass.
-        pydantic_cls = pydantic_dataclass(dataclass_type)
+
+        params = dataclass_type.__dataclass_params__  # type:ignore[attr-defined]
+
+        pydantic_cls = pydantic_dataclass(
+            _cls=dataclass_type,
+            repr=params.repr,
+            eq=params.eq,
+            order=params.order,
+            unsafe_hash=params.unsafe_hash,
+            frozen=params.frozen,
+        )
+
         validated_data = pydantic_cls(**row)
         unpacked_data = {
             field.name: getattr(validated_data, field.name) for field in fields(dataclass_type)
         }
+
         data = dataclass_type(**unpacked_data)
 
     return data
