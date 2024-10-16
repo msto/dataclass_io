@@ -18,9 +18,9 @@ classifiers   = [
 
 [tool.poetry.dependencies]
 python    = "^3.10"
+pydantic  = "^2.9.2"
 
 [tool.poetry.group.dev.dependencies]
-poetry      = "^1.8.2"
 mypy        = "^1.5.1"
 pytest      = "^7.4.4"
 pytest-cov  = "^4.1.0"
