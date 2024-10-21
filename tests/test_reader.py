@@ -32,5 +32,6 @@ def test_reader(kw_only: bool, eq: bool, frozen: bool, tmp_path: Path) -> None:
     if eq:
         assert rows[0] == FakeDataclass(foo="abc", bar=1)
     else:
+        assert isinstance(rows[0], FakeDataclass)
         assert rows[0].foo == "abc"
         assert rows[0].bar == 1
