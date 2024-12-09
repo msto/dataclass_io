@@ -37,28 +37,21 @@ def test_reader(kw_only: bool, eq: bool, frozen: bool, tmp_path: Path) -> None:
         assert rows[0].bar == 1
 
 
-def test_read_csv_with_header_quotes(tmp_path: Path) -> None:
+def test_reader_should_parse_quotes(datadir: Path) -> None:
     """
     Test that having quotes around column names in header row doesn't break anything
     https://github.com/msto/dataclass_io/issues/19
     """
-    fpath = tmp_path / "test.txt"
+    fpath = datadir / "reader_should_parse_quotes.tsv"
 
     @dataclass
     class FakeDataclass:
         id: str
         title: str
 
-    test_csv = [
-        '"id"\t"title"\n',
-        '"fake"\t"A fake object"\n',
-        '"also_fake"\t"Another fake object"\n',
-    ]
-
-    with fpath.open("w") as f:
-        f.writelines(test_csv)
-
     # Parse CSV using DataclassReader
     with DataclassReader.open(fpath, FakeDataclass) as reader:
-        for fake_object in reader:
-            print(fake_object)
+        records = [record for record in reader]
+
+        assert records[0] == FakeDataclass(id="fake", title="A fake object")
+        assert records[1] == FakeDataclass(id="also_fake", title="Another fake object")
