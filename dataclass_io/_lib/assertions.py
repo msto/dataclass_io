@@ -4,6 +4,7 @@ from os import W_OK
 from os import access
 from os import stat
 from pathlib import Path
+from typing import Any
 
 from dataclass_io._lib.dataclass_extensions import DataclassInstance
 from dataclass_io._lib.dataclass_extensions import fieldnames
@@ -98,9 +99,8 @@ def assert_file_is_appendable(
 def assert_file_header_matches_dataclass(
     file: Path | ReadableFileHandle,
     dataclass_type: type[DataclassInstance],
-    delimiter: str,
     comment_prefix: str,
-    quoting: int,
+    **kwargs: Any,
 ) -> None:
     """
     Check that the specified file has a header and its fields match those of the provided dataclass.
@@ -108,11 +108,11 @@ def assert_file_header_matches_dataclass(
     header: FileHeader | None
     if isinstance(file, Path):
         with file.open("r") as fin:
-            header = get_header(fin, delimiter=delimiter, comment_prefix=comment_prefix, quoting=quoting)
+            header = get_header(reader=fin, comment_prefix=comment_prefix, **kwargs)
     else:
         pos = file.tell()
         try:
-            header = get_header(file, delimiter=delimiter, comment_prefix=comment_prefix, quoting=quoting)
+            header = get_header(reader=file, comment_prefix=comment_prefix, **kwargs)
         finally:
             file.seek(pos)
 

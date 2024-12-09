@@ -67,9 +67,8 @@ class FileHeader:
 
 def get_header(
     reader: ReadableFileHandle,
-    delimiter: str,
     comment_prefix: str,
-    quoting: int,
+    **kwargs: Any,
 ) -> Optional[FileHeader]:
     """
     Read the header from an open file.
@@ -87,7 +86,7 @@ def get_header(
     Args:
         reader: An open, readable file handle.
         comment_char: The character which indicates the start of a comment line.
-        quoting: Quoting style (enum value from Python csv package).
+        **kwargs: Additional keyword arguments to pass to `csv.DictReader`.
 
     Returns:
         A `FileHeader` containing the field names and any preceding lines.
@@ -106,12 +105,9 @@ def get_header(
     else:
         return None
 
-    '''
-    msto#19 Read header fields
-    
-    Use csv.DictReader because RFC4180 is tricky to implement correctly
-    '''
-    header_reader = DictReader([line], delimiter=delimiter, quoting=quoting)
-    fieldnames = header_reader.fieldnames
+    # msto#19 Read header fields
+    # Use csv.DictReader because RFC4180 is tricky to implement correctly
+    header_reader = DictReader([line], **kwargs)
+    fieldnames = list(header_reader.fieldnames)
 
     return FileHeader(preface=preface, fieldnames=fieldnames)

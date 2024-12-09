@@ -1,4 +1,3 @@
-import csv
 from contextlib import contextmanager
 from csv import DictReader
 from pathlib import Path
@@ -26,10 +25,9 @@ class DataclassReader:
         self,
         fin: ReadableFileHandle,
         dataclass_type: type[DataclassInstance],
-        delimiter: str = "\t",
         comment_prefix: str = "#",
-        quoting: int = csv.QUOTE_MINIMAL,
-        **kwds: Any,
+        delimiter: str = "\t",
+        **kwargs: Any,
     ) -> None:
         """
         Args:
@@ -49,19 +47,22 @@ class DataclassReader:
             dataclass_type=dataclass_type,
             delimiter=delimiter,
             comment_prefix=comment_prefix,
-            quoting=quoting,
+            **kwargs,
         )
 
         self._dataclass_type = dataclass_type
         self._fin = fin
         self._header = get_header(
-            reader=self._fin, delimiter=delimiter, comment_prefix=comment_prefix, quoting=quoting
+            reader=self._fin,
+            delimiter=delimiter,
+            comment_prefix=comment_prefix,
+            **kwargs,
         )
         self._reader = DictReader(
             f=self._fin,
             fieldnames=fieldnames(dataclass_type),
             delimiter=delimiter,
-            quoting=quoting,
+            **kwargs,
         )
 
     def __iter__(self) -> "DataclassReader":
