@@ -31,7 +31,7 @@ class DataclassWriter:
         include_fields: list[str] | None = None,
         exclude_fields: list[str] | None = None,
         write_header: bool = True,
-        **kwds: Any,
+        **kwargs: Any,
     ) -> None:
         """
         Args:
@@ -65,6 +65,7 @@ class DataclassWriter:
             f=self._fout,
             fieldnames=self._fieldnames,
             delimiter=delimiter,
+            **kwargs,
         )
 
         # TODO: permit writing comment/preface rows before header
@@ -124,9 +125,9 @@ class DataclassWriter:
         dataclass_type: type[DataclassInstance],
         mode: str = "write",
         overwrite: bool = True,
-        delimiter: str = "\t",
         comment_prefix: str = "#",
-        **kwds: Any,
+        delimiter: str = "\t",
+        **kwargs: Any,
     ) -> Iterator["DataclassWriter"]:
         """
         Open a new `DataclassWriter` from a file path.
@@ -142,11 +143,11 @@ class DataclassWriter:
                 `exclude_fields`.
             overwrite: If `True`, and `mode="write"`, the file specified at `path` will be
                 overwritten if it exists.
-            delimiter: The output file delimiter.
             comment_prefix: The prefix for any comment/preface rows preceding the header row.
                 (This argument is ignored when `mode="write"`. It is used when `mode="append"` to
                 validate that the existing file's header matches the specified dataclass.)
-            **kwds: Additional keyword arguments to be passed to the `DataclassWriter` constructor.
+            delimiter: The output file delimiter.
+            **kwds: Additional keyword arguments to be passed to `csv.DictWriter`.
 
         Yields:
             A `DataclassWriter` instance.
@@ -178,6 +179,7 @@ class DataclassWriter:
                 dataclass_type=dataclass_type,
                 delimiter=delimiter,
                 comment_prefix=comment_prefix,
+                **kwargs,
             )
 
         fout = filepath.open(write_mode.abbreviation)
@@ -186,7 +188,7 @@ class DataclassWriter:
                 fout=fout,
                 dataclass_type=dataclass_type,
                 write_header=(write_mode is WriteMode.WRITE),  # Skip header when appending
-                **kwds,
+                **kwargs,
             )
         finally:
             fout.close()

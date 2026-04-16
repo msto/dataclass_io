@@ -35,3 +35,23 @@ def test_reader(kw_only: bool, eq: bool, frozen: bool, tmp_path: Path) -> None:
         assert isinstance(rows[0], FakeDataclass)
         assert rows[0].foo == "abc"
         assert rows[0].bar == 1
+
+
+def test_reader_should_parse_quotes(datadir: Path) -> None:
+    """
+    Test that having quotes around column names in header row doesn't break anything
+    https://github.com/msto/dataclass_io/issues/19
+    """
+    fpath = datadir / "reader_should_parse_quotes.tsv"
+
+    @dataclass
+    class FakeDataclass:
+        id: str
+        title: str
+
+    # Parse CSV using DataclassReader
+    with DataclassReader.open(fpath, FakeDataclass) as reader:
+        records = [record for record in reader]
+
+        assert records[0] == FakeDataclass(id="fake", title="A fake object")
+        assert records[1] == FakeDataclass(id="also_fake", title="Another fake object")

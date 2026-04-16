@@ -1,3 +1,4 @@
+from csv import DictReader
 from dataclasses import dataclass
 from enum import Enum
 from enum import unique
@@ -66,8 +67,8 @@ class FileHeader:
 
 def get_header(
     reader: ReadableFileHandle,
-    delimiter: str,
     comment_prefix: str,
+    **kwargs: Any,
 ) -> Optional[FileHeader]:
     """
     Read the header from an open file.
@@ -85,6 +86,7 @@ def get_header(
     Args:
         reader: An open, readable file handle.
         comment_char: The character which indicates the start of a comment line.
+        **kwargs: Additional keyword arguments to pass to `csv.DictReader`.
 
     Returns:
         A `FileHeader` containing the field names and any preceding lines.
@@ -103,6 +105,9 @@ def get_header(
     else:
         return None
 
-    fieldnames = line.strip().split(delimiter)
+    # msto#19 Read header fields
+    # Use csv.DictReader because RFC4180 is tricky to implement correctly
+    header_reader = DictReader([line], **kwargs)
+    fieldnames = list(header_reader.fieldnames)
 
     return FileHeader(preface=preface, fieldnames=fieldnames)

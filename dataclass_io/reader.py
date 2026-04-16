@@ -25,9 +25,9 @@ class DataclassReader:
         self,
         fin: ReadableFileHandle,
         dataclass_type: type[DataclassInstance],
-        delimiter: str = "\t",
         comment_prefix: str = "#",
-        **kwds: Any,
+        delimiter: str = "\t",
+        **kwargs: Any,
     ) -> None:
         """
         Args:
@@ -35,6 +35,7 @@ class DataclassReader:
             dataclass_type: Dataclass type.
             delimiter: The input file delimiter.
             comment_prefix: The prefix for any comment/preface rows preceding the header row.
+            quoting: Quoting style (enum value from Python csv package).
             dataclass_type: Dataclass type.
 
         Raises:
@@ -46,17 +47,22 @@ class DataclassReader:
             dataclass_type=dataclass_type,
             delimiter=delimiter,
             comment_prefix=comment_prefix,
+            **kwargs,
         )
 
         self._dataclass_type = dataclass_type
         self._fin = fin
         self._header = get_header(
-            reader=self._fin, delimiter=delimiter, comment_prefix=comment_prefix
+            reader=self._fin,
+            delimiter=delimiter,
+            comment_prefix=comment_prefix,
+            **kwargs,
         )
         self._reader = DictReader(
             f=self._fin,
             fieldnames=fieldnames(dataclass_type),
             delimiter=delimiter,
+            **kwargs,
         )
 
     def __iter__(self) -> "DataclassReader":
