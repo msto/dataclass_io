@@ -1,5 +1,8 @@
 # dataclass_io
 
+> [!WARNING]
+> This project has been archived in favor of [fg-labs/fgmetric](https://github.com/fg-labs/fgmetric).
+
 [![CI](https://github.com/msto/dataclass_io/actions/workflows/python_package.yml/badge.svg?branch=main)](https://github.com/msto/dataclass_io/actions/workflows/python_package.yml?query=branch%3Amain)
 [![Python Versions](https://img.shields.io/badge/python-3.10_|_3.11_|_3.12-blue)](https://github.com/msto/dataclass_io)
 [![MyPy Checked](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/)
